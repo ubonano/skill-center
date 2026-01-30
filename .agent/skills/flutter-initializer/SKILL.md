@@ -43,10 +43,37 @@ Run the following command to create the project with Web support enabled:
     ```
 
 ### 4. Setup Dependencies
-1.  Add `get_it` to `pubspec.yaml`. You can do this by running `flutter pub add get_it` inside the project directory.
+1.  Add `get_it` and Firebase packages to `pubspec.yaml`. Run:
+    ```bash
+    flutter pub add get_it firebase_core firebase_auth cloud_firestore
+    ```
 2.  Run `flutter pub get`.
 
 ### 5. Create Configuration Files
+
+**`lib/core/config/secret/firebase_options.dart`**:
+*Create this file with dummy values so the project compiles. The user must replace it later.*
+```dart
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+
+class DefaultFirebaseOptions {
+  static FirebaseOptions get currentPlatform {
+    if (kIsWeb) {
+      return const FirebaseOptions(
+        apiKey: 'demo-api-key',
+        appId: 'demo-app-id',
+        messagingSenderId: 'demo-sender-id',
+        projectId: 'demo-project-id',
+      );
+    }
+    // TODO: Add other platforms (Android/iOS) via flutterfire configure
+    throw UnsupportedError(
+      'DefaultFirebaseOptions are not supported for this platform.',
+    );
+  }
+}
+```
 
 **`lib/core/config/locator.dart`**:
 ```dart
@@ -88,10 +115,31 @@ class MyApp extends StatelessWidget {
 **`lib/main.dart`**:
 ```dart
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart'; // For kDebugMode
 import 'app.dart';
 import 'core/config/locator.dart';
+import 'core/config/secret/firebase_options.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  // Setup Firebase Emulators in Debug Mode
+  if (kDebugMode) {
+    try {
+      await FirebaseAuth.instance.useAuthEmulator('localhost', 9099);
+      FirebaseFirestore.instance.useFirestoreEmulator('localhost', 8080);
+      print('Connected to Firebase Emulators');
+    } catch (e) {
+      print('Error connecting to Firebase Emulators: $e');
+    }
+  }
+
   setupLocator();
   runApp(const MyApp());
 }
@@ -121,10 +169,14 @@ void main() {
         - `lib/core/`: Shared resources, services, and config.
         - `lib/features/`: Isolated features with their own logic/UI.
     - **Dependency Injection**: `get_it` (via `locator.dart`).
+    - **Backend**: Firebase (Core, Auth, Firestore).
 
     ## 2. Tech Stack & Libraries
     - **GetIt**: For service locator/dependency injection.
-    - (Add others as the project evolves)
+    - **Firebase**:
+        - `firebase_core`, `firebase_auth`, `cloud_firestore`.
+        - **Emulators**: MUST be used for local development (Auth: 9099, Firestore: 8080).
+        - **Credentials**: `firebase_options.dart` MUST be placed in `lib/core/config/secret/`.
 
     ## 3. Code Conventions (CRITICAL)
     - **Clean Code**:
