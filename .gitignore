@@ -1,0 +1,14 @@
+
+# Mac OS
+.DS_Store
+
+# Agent specific (if any temp files needed, strictly usually skills are committed)
+.agent/temp/
+.agent/memory/
+.agent/workspaces/
+
+# General
+node_modules/
+.idea/
+.vscode/
+*.log
