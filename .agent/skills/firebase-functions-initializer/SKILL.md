@@ -25,12 +25,17 @@ Sigue estos pasos estrictamente para inicializar las Cloud Functions de Firebase
 - Localiza el archivo de entrada principal (`index.js`).
 - Elimina **todo** el código, incluyendo el código comentado y los ejemplos que Firebase genera por defecto.
 
-### 3. Implementar "Hola Mundo"
+### 3. Implementar "Hola Mundo" con Firestore
 - Escribe una función HTTP básica en `index.js` que retorne un "Hola Mundo".
+- Asegúrate de importar e inicializar **Firestore** utilizando `firebase-admin`.
 
 **Ejemplo (`index.js`):**
 ```javascript
 const functions = require("firebase-functions");
+const admin = require("firebase-admin");
+
+admin.initializeApp();
+const db = admin.firestore();
 
 exports.helloWorld = functions.https.onRequest((request, response) => {
   response.send("hola mundo");
